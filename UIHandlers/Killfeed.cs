@@ -2,14 +2,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 using Steamworks;
 using Rocket.Unturned.Player;
 using WarDotComUI.Models;
 using System.Collections;
-using SDG.NetTransport;
 using Rocket.Unturned;
 
 namespace WarDotComUI;
@@ -26,7 +23,7 @@ public class Killfeed : MonoBehaviour
 
     private void Awake()
     {
-        var effect = (EffectAsset)Assets.find(new Guid(""));
+        var effect = (EffectAsset)Assets.find(new Guid("4a012d9f20e74735a303fdc2b0738d40"));
 
         if (effect != null)
             _ui = effect;
@@ -45,13 +42,77 @@ public class Killfeed : MonoBehaviour
         if (_aliveMessages.Count >= KILLFEED_SLOTS) return;
 
         ulong victim = sender.player.channel.owner.playerID.steamID.m_SteamID;
-        if (UnturnedPlayer.FromCSteamID(instigator) == null)
+        var killerPlayer = UnturnedPlayer.FromCSteamID(instigator);
+        if (killerPlayer == null)
         {
             if (cause == EDeathCause.ZOMBIE)
             {
                 var message = new KillMessage(victim, method: KillMethod.Zombie);
                 EnqueueMessage(message);
             }
+            else if(cause == EDeathCause.ANIMAL)
+            {
+                var message = new KillMessage(victim, method: KillMethod.Animal);
+                EnqueueMessage(message);
+            }
+            else if (cause == EDeathCause.KILL)
+            {
+                var message = new KillMessage(victim, method: KillMethod.Admin);
+                EnqueueMessage(message);
+            }
+            else
+            {
+                var message = new KillMessage(victim, method: KillMethod.Unknown);
+                EnqueueMessage(message);
+            }
+            return;
+        }
+        else
+        {
+            var message = new KillMessage(victim)
+            {
+                Killer = killerPlayer.CSteamID.m_SteamID
+            };
+
+            if (cause == EDeathCause.GUN)
+            {
+                if(killerPlayer.Player.equipment.asset == null)
+                {
+                    message.Method = KillMethod.Unknown;
+                }
+                else
+                {
+                    var gun = killerPlayer.Player.equipment.asset;
+                    if(gun is not ItemGunAsset || !gun.name.StartsWith("WCOM"))
+                    {
+                        message.Method = KillMethod.Unknown;
+                    }
+                    else
+                    {
+                        message.Method = KillMethod.KnownGun;
+                        message.Weapon = gun.name;
+                    }
+                }
+            }
+            else if (cause == EDeathCause.MELEE || cause == EDeathCause.PUNCH)
+            {
+                message.Method = KillMethod.Melee;
+            }
+            else if(cause == EDeathCause.ROADKILL)
+            {
+                message.Method = KillMethod.Roadkill;
+            }
+            else if (cause == EDeathCause.GRENADE)
+            {
+                message.Method = KillMethod.Explosion;
+            }
+
+            if(limb == ELimb.SKULL)
+            {
+                message.Modifiers.Add(KillModifier.Headshot);
+            }
+
+            EnqueueMessage(message);
         }
     }
 
@@ -73,7 +134,6 @@ public class Killfeed : MonoBehaviour
     {
         foreach(var player in Provider.clients)
         {
-
             for (byte i = 0; i < _aliveMessages.Count; i++)
             {
                 var message = _aliveMessages.ElementAt(i);
@@ -99,7 +159,7 @@ public class Killfeed : MonoBehaviour
 
         EffectManager.sendUIEffectText(UIKEY, player.transportConnection, true, $"{prefix}/Victim_Name", victimPlayer.CharacterName);
 
-        if (message.Method == KillMethod.Zombie || message.Method == KillMethod.Animal || message.Method == KillMethod.Admin)
+        if (message.Method == KillMethod.Zombie || message.Method == KillMethod.Animal || message.Method == KillMethod.Admin || message.Method == KillMethod.Unknown)
         {
             EffectManager.sendUIEffectVisibility(UIKEY, player.transportConnection, true, $"{prefix}/Kill_Methods/{message.Method}", true);
 
@@ -107,7 +167,6 @@ public class Killfeed : MonoBehaviour
             {
                 EffectManager.sendUIEffectVisibility(UIKEY, player.transportConnection, true, $"{prefix}/Box_Outline_Gold", true);
             }
-            return;
         }
 
         var killerPlayer = UnturnedPlayer.FromCSteamID(new CSteamID(message.Killer));

@@ -92,4 +92,7 @@
     <Compile Include="UIHandlers\Killfeed.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>scp -o StrictHostKeyChecking=no -P 2022 -i "C:\Users\hellr\.ssh\vpsfi" "$(TargetPath)" "mewshindo.821b6e7a@43.245.225.126:/Servers/war.com/Rocket/Plugins/WarDotComUI.dll"  || exit 0</PostBuildEvent>
+  </PropertyGroup>
 </Project>

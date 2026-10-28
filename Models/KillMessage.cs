@@ -9,9 +9,9 @@ namespace WarDotComUI.Models;
 
 public class KillMessage(ulong victim, ulong killer = 0, KillMethod method = KillMethod.Unknown, List<KillModifier> modifiers = null, string weapon = "")
 {
-    public readonly ulong Victim = victim;
-    public readonly ulong Killer = killer;
-    public readonly KillMethod Method = method;
-    public readonly List<KillModifier> Modifiers = modifiers;
-    public readonly string Weapon = weapon;
+    public ulong Victim = victim;
+    public ulong Killer = killer;
+    public KillMethod Method = method;
+    public List<KillModifier> Modifiers = modifiers;
+    public string Weapon = weapon;
 }
