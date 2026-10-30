@@ -5,6 +5,8 @@ using Steamworks;
 using UnityEngine;
 using WarDotComUI.Models;
 using System.Collections;
+using Rocket.Unturned.Player;
+using WarDotComUI.UIHandlers;
 
 namespace WarDotComUI;
 
@@ -12,7 +14,7 @@ public class Plugin : RocketPlugin
 {
     public static Plugin Instance;
 
-    private Killfeed _killfeed;
+    private PlayerUIManager _uiManager;
     private EffectAsset _lightningBolt;
     private EffectAsset _boom;
 
@@ -22,17 +24,42 @@ public class Plugin : RocketPlugin
         Instance = this;
         Level.onLevelLoaded += onLevelLoaded;
         PlayerLife.onPlayerDied += OnPlayerDied;
+        InteractableVehicle.OnFuelChanged_Global += OnFuelChanged_Global;
     }
 
     protected override void Unload()
     {
         Level.onLevelLoaded -= onLevelLoaded;
         PlayerLife.onPlayerDied -= OnPlayerDied;
+
+        InteractableVehicle.OnFuelChanged_Global -= OnFuelChanged_Global;
+
         Instance = null;
+    }
+
+    private void OnFuelChanged_Global(InteractableVehicle obj)
+    {
+        if(obj.fuel <= 1)
+        {
+            VehicleManager.sendVehicleHealth(obj, 0);
+        }
     }
 
     private void OnPlayerDied(PlayerLife sender, EDeathCause cause, ELimb limb, CSteamID instigator)
     {
+        var killerPlayer = UnturnedPlayer.FromCSteamID(instigator);
+        if(killerPlayer != null)
+        {
+            if (cause == EDeathCause.GUN && limb == ELimb.SKULL)
+            {
+                EffectManager.sendUIEffectVisibility(UIKEY, killerPlayer.Player.channel.owner.transportConnection, true, "Canvas/SplashText_Container/Controller/Headshot", true);
+            }
+            else if (cause == EDeathCause.ROADKILL)
+            {
+                EffectManager.sendUIEffectVisibility(UIKEY, killerPlayer.Player.channel.owner.transportConnection, true, "Canvas/SplashText_Container/Controller/Roadkill", true);
+            }
+        }
+
         if (_punished == null) return;
         if (sender.player.channel.owner.playerID.steamID.m_SteamID != _punished.channel.owner.playerID.steamID.m_SteamID)
             sender.ServerRespawn(false);
@@ -40,14 +67,9 @@ public class Plugin : RocketPlugin
 
     private void onLevelLoaded(int level)
     {
-        _killfeed = new GameObject("Killfeed").AddComponent<Killfeed>();
+        _uiManager = new PlayerUIManager();
         _lightningBolt = (EffectAsset)Assets.find(new Guid("bed12ffc45694cd69217924d75e96fe9"));
         _boom = (EffectAsset)Assets.find(new Guid("61d63a016a6448ffb6e4432a4c6a6ee1"));
-    }
-
-    public void SendKillfeedMessage_Test(KillMessage message)
-    {
-        _killfeed.EnqueueMessage_Test(message);
     }
 
     public void Zeus(Player player)

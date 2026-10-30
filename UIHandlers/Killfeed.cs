@@ -18,20 +18,16 @@ public class Killfeed : MonoBehaviour
     const float MESSAGE_APPEAR_COOLDOWN = 0.5f;
     const byte KILLFEED_SLOTS = 8;
 
-    private EffectAsset _ui;
     private readonly Queue<KillMessage> _queue = [];
     private float _time = 0f;
     private readonly List<KillMessage> _aliveMessages = [];
 
+    private byte _lastDisplayedMessages;
+
     private void Awake()
     {
-        var effect = (EffectAsset)Assets.find(new Guid("4a012d9f20e74735a303fdc2b0738d40"));
-
-        if (effect != null)
-            _ui = effect;
-
         PlayerLife.onPlayerDied += OnPlayerDied;
-        U.Events.OnPlayerConnected += OnPlayerConnected;
+        DamageTool.damageAnimalRequested += OnDamageAnimalRequested;
     }
 
     private void Update()
@@ -53,12 +49,6 @@ public class Killfeed : MonoBehaviour
     private void OnDestroy()
     {
         PlayerLife.onPlayerDied -= OnPlayerDied;
-        U.Events.OnPlayerConnected -= OnPlayerConnected;
-    }
-
-    private void OnPlayerConnected(UnturnedPlayer player)
-    {
-        EffectManager.SendUIEffect(_ui, Plugin.UIKEY, player.Player.channel.owner.transportConnection, true);
     }
 
     private void OnPlayerDied(PlayerLife sender, EDeathCause cause, ELimb limb, CSteamID instigator)
@@ -104,6 +94,7 @@ public class Killfeed : MonoBehaviour
         else
         {
             var killerPlayer = UnturnedPlayer.FromCSteamID(instigator);
+
             var message = new KillMessage(victim)
             {
                 Killer = killerPlayer.CharacterName
@@ -151,6 +142,28 @@ public class Killfeed : MonoBehaviour
         }
     }
 
+    private void OnDamageAnimalRequested(ref DamageAnimalParameters parameters, ref bool shouldAllow)
+    {
+        if(parameters.damage >= parameters.animal.GetHealth())
+        {
+            if(parameters.instigator != null)
+            {
+                if (parameters.instigator is Player player)
+                {
+                    EffectManager.sendUIEffectVisibility(Plugin.UIKEY, player.channel.owner.transportConnection, true, "Huntsman", true);
+                }
+                else if (parameters.instigator is CSteamID id)
+                {
+                    EffectManager.sendUIEffectVisibility(Plugin.UIKEY, UnturnedPlayer.FromCSteamID(id).Player.channel.owner.transportConnection, true, "Huntsman", true);
+                }
+                else if (parameters.instigator is SteamPlayer sp)
+                {
+                    EffectManager.sendUIEffectVisibility(Plugin.UIKEY, sp.player.channel.owner.transportConnection, true, "Huntsman", true);
+                }
+            }
+        }
+    }
+
     private void EnqueueMessage(KillMessage message)
     {
         _queue.Enqueue(message);
@@ -178,8 +191,11 @@ public class Killfeed : MonoBehaviour
                 SendKillMessage(player, message, i);
             }
 
-            if (_aliveMessages.Count > 0)
+
+            if (_aliveMessages.Count > 0 && (byte)_aliveMessages.Count > _lastDisplayedMessages)
                 EffectManager.sendUIEffectVisibility(Plugin.UIKEY, player.transportConnection, true, $"Canvas/Container/Controller/Feed", true);
+
+            _lastDisplayedMessages = (byte)_aliveMessages.Count;
         }
     }
 

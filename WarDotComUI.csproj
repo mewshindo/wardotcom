@@ -38,6 +38,10 @@
     <Reference Include="com.rlabrecque.steamworks.net">
       <HintPath>..\GmodMenu\Libs\com.rlabrecque.steamworks.net.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Unturned\Unturned_Data\Managed\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="Rocket.API">
       <HintPath>..\GmodMenu\Libs\Rocket.API.dll</HintPath>
     </Reference>
@@ -85,13 +89,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Commands\PunishCommand.cs" />
-    <Compile Include="Commands\TestKillFeed.cs" />
     <Compile Include="Models\KillMessage.cs" />
     <Compile Include="Models\KillMethod.cs" />
     <Compile Include="Models\KillModifier.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UIHandlers\Killfeed.cs" />
+    <Compile Include="UIHandlers\LifeUI.cs" />
+    <Compile Include="UIHandlers\PlayerUIManager.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
