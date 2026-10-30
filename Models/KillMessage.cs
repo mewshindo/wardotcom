@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace WarDotComUI.Models;
 
-public class KillMessage(ulong victim, ulong killer = 0, KillMethod method = KillMethod.Unknown, List<KillModifier> modifiers = null, string weapon = "")
+public class KillMessage(string victim, string killer = null, KillMethod method = KillMethod.Unknown, List<KillModifier> modifiers = null, string weapon = "")
 {
-    public ulong Victim = victim;
-    public ulong Killer = killer;
+    public string Victim = victim;
+    public string Killer = killer;
     public KillMethod Method = method;
-    public List<KillModifier> Modifiers = modifiers;
+    public List<KillModifier> Modifiers = modifiers ?? [];
     public string Weapon = weapon;
 }

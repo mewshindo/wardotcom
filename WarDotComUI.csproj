@@ -84,6 +84,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Commands\PunishCommand.cs" />
+    <Compile Include="Commands\TestKillFeed.cs" />
     <Compile Include="Models\KillMessage.cs" />
     <Compile Include="Models\KillMethod.cs" />
     <Compile Include="Models\KillModifier.cs" />

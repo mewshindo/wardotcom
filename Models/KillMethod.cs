@@ -15,5 +15,7 @@ public enum KillMethod
     Zombie,
     Animal,
     Admin,
-    KnownGun
+    KnownGun,
+    Suicide,
+    Bleedout
 }
