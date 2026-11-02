@@ -5,32 +5,38 @@ using Rocket.Unturned.Player;
 using SDG.Unturned;
 using System;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace WarDotComUI.UIHandlers;
 
 public class LifeUI
 {
     private readonly UnturnedPlayer _player;
+    private bool _staminaShown = true;
     public LifeUI(UnturnedPlayer player)
     {
         _player = player;
 
-        player.Player.life.onHealthUpdated += OnHealthUpdated;
-        player.Player.life.onBleedingUpdated += OnBleedingUpdated;
-        player.Player.life.onBrokenUpdated += OnBrokenUpdated;
-        player.Player.life.onStaminaUpdated += OnStaminaUpdated;
-        player.Player.movement.onRadiationUpdated += OnRadiationUpdated;
+        PlayerLife.OnTellHealth_Global += OnHealthUpdated;
+        PlayerLife.OnTellBroken_Global += OnBrokenUpdated;
+        PlayerLife.OnTellBleeding_Global += OnBleedingUpdated;
+        _player.Player.life.onStaminaUpdated += OnStaminaUpdated;
+        _player.Player.movement.onRadiationUpdated += OnRadiationUpdated;
+        _player.Player.life.onHurt += OnHurt;
+        _player.Player.life.onLifeUpdated += OnLifeUpdated;
         PlayerEquipment.OnUseableChanged_Global += OnUseableChanged_Global;
         UseableGun.onBulletSpawned += onBulletSpawned;
+        UseableGun.OnReloading_Global += OnReloading_Global;
 
-        player.Player.setPluginWidgetFlag(EPluginWidgetFlags.ShowLifeMeters, false);
-        player.Player.setPluginWidgetFlag(EPluginWidgetFlags.ShowStatusIcons, false);
-        player.Player.setPluginWidgetFlag(EPluginWidgetFlags.ShowUseableGunStatus, false);
-        player.Player.setPluginWidgetFlag(EPluginWidgetFlags.ShowVehicleStatus, false);
+        _player.Player.setPluginWidgetFlag(EPluginWidgetFlags.ShowLifeMeters, false);
+        _player.Player.setPluginWidgetFlag(EPluginWidgetFlags.ShowStatusIcons, false);
+        _player.Player.setPluginWidgetFlag(EPluginWidgetFlags.ShowUseableGunStatus, false);
+        _player.Player.setPluginWidgetFlag(EPluginWidgetFlags.ShowVehicleStatus, false);
+        _player.Player.setPluginWidgetFlag(EPluginWidgetFlags.ShowReputationChangeNotification, false);
 
-        OnHealthUpdated(_player.Health);
-        OnBleedingUpdated(_player.Bleeding);
-        OnBrokenUpdated(_player.Broken);
+        OnHealthUpdated(_player.Player.life);
+        OnBrokenUpdated(_player.Player.life);
+        OnBleedingUpdated(_player.Player.life);
         OnStaminaUpdated(_player.Stamina);
         OnRadiationUpdated(_player.Player.movement.isRadiated);
         OnUseableChanged_Global(_player.Player.equipment);
@@ -38,7 +44,57 @@ public class LifeUI
         GetUsenameAndProfilePicture();
     }
 
-    private async Task GetUsenameAndProfilePicture()
+    private void OnHealthUpdated(PlayerLife life)
+    {
+        if (life.player.channel.owner.playerID.steamID.m_SteamID != _player.CSteamID.m_SteamID) return;
+
+        SendUIText("Health_Percentage", $"{life.health}");
+
+        var bar = new string('█', life.health);
+        SendUIText("Bar_Health", bar);
+    }
+
+    private void OnReloading_Global(UseableGun obj)
+    {
+        if (obj.player.channel.owner.playerID.steamID.m_SteamID != _player.CSteamID.m_SteamID) return;
+
+        UpdateAmmoUI();
+    }
+
+    private void OnBleedingUpdated(PlayerLife life)
+    {
+        if (life.player.channel.owner.playerID.steamID.m_SteamID != _player.CSteamID.m_SteamID) return;
+
+        SendUIVisibility("Bleeding", life.isBleeding);
+    }
+
+    private void OnBrokenUpdated(PlayerLife life)
+    {
+        if (life.player.channel.owner.playerID.steamID.m_SteamID != _player.CSteamID.m_SteamID) return;
+
+        SendUIVisibility("Bones", life.isBroken);
+    }
+
+    private void OnLifeUpdated(bool isDead)
+    {
+        SendUIVisibility("Canvas", !isDead);
+        if (!isDead)
+        {
+            OnHealthUpdated(_player.Player.life);
+            OnBrokenUpdated(_player.Player.life);
+            OnBleedingUpdated(_player.Player.life);
+            OnStaminaUpdated(_player.Stamina);
+            OnRadiationUpdated(_player.Player.movement.isRadiated);
+            OnUseableChanged_Global(_player.Player.equipment);
+        }
+    }
+
+    private void OnHurt(Player player, byte damage, Vector3 force, EDeathCause cause, ELimb limb, Steamworks.CSteamID killer)
+    {
+        OnHealthUpdated(player.life);
+    }
+
+    private async void GetUsenameAndProfilePicture()
     {
         var url = $"https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key=4F8ACDBD828AFF3693B9E61814EC85D3&steamids={_player.CSteamID.m_SteamID}";
 
@@ -68,7 +124,7 @@ public class LifeUI
 
     private void onBulletSpawned(UseableGun gun, BulletInfo bullet)
     {
-        if (gun.player != _player.Player) return;
+        if (gun.player.channel.owner.playerID.steamID.m_SteamID != _player.CSteamID.m_SteamID) return;
 
         var equipment = gun.player.equipment;
 
@@ -88,11 +144,7 @@ public class LifeUI
             return;
         }
 
-        var ammo = equipment.state[10];
-
-        byte ammomax = Assets.find(EAssetType.ITEM, BitConverter.ToUInt16(equipment.state, 8)) is ItemMagazineAsset mag ? mag.amount : (byte)0;
-
-        UpdateAmmoUI(ammo, ammomax, equipment.asset.name == "WCOM_Bluntforce" || equipment.asset.name == "WCOM_Baston" || equipment.asset.name == "WCOM_Thumber");
+        UpdateAmmoUI();
     }
 
     private void SendUIText(string nameOrPath, string text)
@@ -107,14 +159,22 @@ public class LifeUI
 
     private void OnStaminaUpdated(byte newStamina)
     {
-        var bar = new string('█', (int)(newStamina / 100f * 27f));
-        SendUIText("Bar_Stamina", bar);
-    }
+        if(newStamina >= 99 && _staminaShown)
+        {
+            SendUIVisibility("Stamina_OnOff", false);
+            _staminaShown = false;
+        }
+        else if (newStamina < 99 && !_staminaShown)
+        {
+            SendUIVisibility("Stamina_OnOff", true);
+            _staminaShown = true;
+        }
 
-    private void OnHealthUpdated(byte newHealth)
-    {
-        var bar = new string('█', (int)(newHealth / 100f * 27f));
-        SendUIText("Bar_Health", bar);
+        if (_staminaShown)
+        {
+            var bar = new string('█', newStamina);
+            SendUIText("Bar_Stamina", bar);
+        }
     }
 
     private void OnRadiationUpdated(bool isRadiated)
@@ -122,19 +182,9 @@ public class LifeUI
         SendUIVisibility("Infection", isRadiated);
     }
 
-    private void OnBrokenUpdated(bool newBroken)
-    {
-        SendUIVisibility("Bones", newBroken);
-    }
-
-    private void OnBleedingUpdated(bool newBleeding)
-    {
-        SendUIVisibility("Bleeding", newBleeding);
-    }
-
     private void OnUseableChanged_Global(PlayerEquipment obj)
     {
-        if (obj.player != _player.Player) return;
+        if (obj.player.channel.owner.playerID.steamID.m_SteamID != _player.CSteamID.m_SteamID) return;
 
         if (obj.asset == null)
         {
@@ -152,22 +202,25 @@ public class LifeUI
             return;
         }
 
-        UpdateGunUI(obj);
+        UpdateGunUI();
     }
 
-    private void UpdateGunUI(PlayerEquipment equipment)
+    private void UpdateGunUI()
     {
-        var gunName = equipment.asset.name.Split(["COM_"], StringSplitOptions.None)[1];
-        SendUIVisibility(gunName, true);
+        SendUIVisibility("Gun_UI", true);
+        SendUIVisibility(_player.Player.equipment.asset.name, true);
 
+        UpdateAmmoUI();
+    }
+    private void UpdateAmmoUI()
+    {
+        var equipment = _player.Player.equipment;
         var ammo = equipment.state[10];
 
-        byte ammomax = Assets.find(EAssetType.ITEM, BitConverter.ToUInt16(equipment.state, 8)) is ItemMagazineAsset mag ? mag.amount : (byte)0;
+        byte ammoMax = Assets.find(EAssetType.ITEM, BitConverter.ToUInt16(equipment.state, 8)) is ItemMagazineAsset mag ? mag.amount : (byte)0;
 
-        UpdateAmmoUI(ammo, ammomax, equipment.asset.name == "WCOM_Bluntforce" || equipment.asset.name == "WCOM_Baston" || equipment.asset.name == "WCOM_Thumber");
-    }
-    private void UpdateAmmoUI(byte ammo, byte ammoMax, bool shell)
-    {
+        bool shell = equipment.asset.name == "WCOM_Bluntforce" || equipment.asset.name == "WCOM_Bastone" || equipment.asset.name == "WCOM_Thumber";
+
         SendUIText("Ammo_Count", $"{ammo}/{ammoMax}");
         if (shell)
             SendUIVisibility("Shell", true);
@@ -178,5 +231,19 @@ public class LifeUI
     private void ClearGunUI()
     {
         SendUIVisibility("Gun_UI", false);
+    }
+
+    public void Dispose()
+    {
+        PlayerLife.OnTellHealth_Global -= OnHealthUpdated;
+        PlayerLife.OnTellBroken_Global -= OnBrokenUpdated;
+        PlayerLife.OnTellBleeding_Global -= OnBleedingUpdated;
+        _player.Player.life.onStaminaUpdated -= OnStaminaUpdated;
+        _player.Player.movement.onRadiationUpdated -= OnRadiationUpdated;
+        _player.Player.life.onHurt -= OnHurt;
+        _player.Player.life.onLifeUpdated -= OnLifeUpdated;
+        PlayerEquipment.OnUseableChanged_Global -= OnUseableChanged_Global;
+        UseableGun.onBulletSpawned -= onBulletSpawned;
+        UseableGun.OnReloading_Global += OnReloading_Global;
     }
 }

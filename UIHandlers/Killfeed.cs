@@ -144,23 +144,24 @@ public class Killfeed : MonoBehaviour
 
     private void OnDamageAnimalRequested(ref DamageAnimalParameters parameters, ref bool shouldAllow)
     {
+        Console.WriteLine($"Parameters:\nDamage: {parameters.damage}\nInstigator: {parameters.instigator.GetType().Name}, null? {parameters.instigator == null}\nAnimal health: {parameters.animal.GetHealth()}");
+        if (parameters.instigator == null) return;
+
         if(parameters.damage >= parameters.animal.GetHealth())
         {
-            if(parameters.instigator != null)
+            if (parameters.instigator is Player player)
             {
-                if (parameters.instigator is Player player)
-                {
-                    EffectManager.sendUIEffectVisibility(Plugin.UIKEY, player.channel.owner.transportConnection, true, "Huntsman", true);
-                }
-                else if (parameters.instigator is CSteamID id)
-                {
-                    EffectManager.sendUIEffectVisibility(Plugin.UIKEY, UnturnedPlayer.FromCSteamID(id).Player.channel.owner.transportConnection, true, "Huntsman", true);
-                }
-                else if (parameters.instigator is SteamPlayer sp)
-                {
-                    EffectManager.sendUIEffectVisibility(Plugin.UIKEY, sp.player.channel.owner.transportConnection, true, "Huntsman", true);
-                }
+                EffectManager.sendUIEffectVisibility(Plugin.UIKEY, player.channel.owner.transportConnection, true, "Huntsman", true);
+                return;
             }
+        }
+        if (parameters.instigator is Bumper b)
+        {
+            if (!b.transform.parent.TryGetComponent(out InteractableVehicle veh)) return;
+
+            if (veh.passengers.Length == 0) return;
+
+            EffectManager.sendUIEffectVisibility(Plugin.UIKEY, veh.GetDriverClient().transportConnection, true, "Huntsman", true);
         }
     }
 
@@ -194,9 +195,8 @@ public class Killfeed : MonoBehaviour
 
             if (_aliveMessages.Count > 0 && (byte)_aliveMessages.Count > _lastDisplayedMessages)
                 EffectManager.sendUIEffectVisibility(Plugin.UIKEY, player.transportConnection, true, $"Canvas/Container/Controller/Feed", true);
-
-            _lastDisplayedMessages = (byte)_aliveMessages.Count;
         }
+        _lastDisplayedMessages = (byte)_aliveMessages.Count;
     }
 
     private void SendKillMessage(SteamPlayer player, KillMessage message, int index)
