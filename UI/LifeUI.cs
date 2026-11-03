@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using System.Collections.Generic;
 
-namespace WarDotCom.UIHandlers;
+namespace WarDotCom.UI;
 
 public class LifeUI
 {

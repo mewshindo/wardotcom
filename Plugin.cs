@@ -6,7 +6,7 @@ using UnityEngine;
 using WarDotCom.Models;
 using System.Collections;
 using Rocket.Unturned.Player;
-using WarDotCom.UIHandlers;
+using WarDotCom.UI;
 
 namespace WarDotCom;
 

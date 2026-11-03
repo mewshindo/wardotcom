@@ -89,14 +89,24 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Commands\PunishCommand.cs" />
+    <Compile Include="EventRouter.cs" />
+    <Compile Include="GameManager.cs" />
+    <Compile Include="Gamemodes\GunGame\GunGameConfig.cs" />
+    <Compile Include="Gamemodes\GunGame\GunGameUI.cs" />
+    <Compile Include="Gamemodes\Gamemode.cs" />
+    <Compile Include="Gamemodes\IGameConfig.cs" />
     <Compile Include="Models\KillMessage.cs" />
     <Compile Include="Models\KillMethod.cs" />
     <Compile Include="Models\KillModifier.cs" />
+    <Compile Include="Gamemodes\GunGame\GunGame.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="UIHandlers\Killfeed.cs" />
-    <Compile Include="UIHandlers\LifeUI.cs" />
-    <Compile Include="UIHandlers\PlayerUIManager.cs" />
+    <Compile Include="States\IGameState.cs" />
+    <Compile Include="States\PlayingState.cs" />
+    <Compile Include="UI\Killfeed.cs" />
+    <Compile Include="UI\LifeUI.cs" />
+    <Compile Include="UI\PlayerUIManager.cs" />
+    <Compile Include="Wrappers\Vector3Wrapper.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

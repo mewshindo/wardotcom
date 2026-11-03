@@ -99,11 +99,11 @@ public class Killfeed : MonoBehaviour
             {
                 if (cause == EDeathCause.GUN && limb == ELimb.SKULL)
                 {
-                    EffectManager.sendUIEffectVisibility(UIKEY, killerPlayer.Player.channel.owner.transportConnection, true, "Canvas/SplashText_Container/Controller/Headshot", true);
+                    EffectManager.sendUIEffectVisibility(Plugin.UIKEY, killerPlayer.Player.channel.owner.transportConnection, true, "Canvas/SplashText_Container/Controller/Headshot", true);
                 }
                 else if (cause == EDeathCause.ROADKILL)
                 {
-                    EffectManager.sendUIEffectVisibility(UIKEY, killerPlayer.Player.channel.owner.transportConnection, true, "Canvas/SplashText_Container/Controller/Roadkill", true);
+                    EffectManager.sendUIEffectVisibility(Plugin.UIKEY, killerPlayer.Player.channel.owner.transportConnection, true, "Canvas/SplashText_Container/Controller/Roadkill", true);
                 }
             }
 
