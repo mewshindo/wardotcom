@@ -6,12 +6,16 @@ using SDG.Unturned;
 using System;
 using System.Threading.Tasks;
 using UnityEngine;
+using System.Collections.Generic;
 
 namespace WarDotComUI.UIHandlers;
 
 public class LifeUI
 {
     private readonly UnturnedPlayer _player;
+
+    private readonly Dictionary<ushort, byte> ammoMaxes = [];
+
     private bool _staminaShown = true;
     public LifeUI(UnturnedPlayer player)
     {
@@ -42,6 +46,16 @@ public class LifeUI
         OnUseableChanged_Global(_player.Player.equipment);
 
         GetUsenameAndProfilePicture();
+
+        List<ItemMagazineAsset> assets = [];
+        Assets.find(assets);
+        foreach (ItemMagazineAsset mag in assets)
+        {
+            if (mag.name.StartsWith("WCOM"))
+            {
+                ammoMaxes.Add(mag.id, mag.amount);
+            }
+        }
     }
 
     private void OnHealthUpdated(PlayerLife life)
@@ -217,11 +231,9 @@ public class LifeUI
         var equipment = _player.Player.equipment;
         var ammo = equipment.state[10];
 
-        byte ammoMax = Assets.find(EAssetType.ITEM, BitConverter.ToUInt16(equipment.state, 8)) is ItemMagazineAsset mag ? mag.amount : (byte)0;
-
         bool shell = equipment.asset.name == "WCOM_Bluntforce" || equipment.asset.name == "WCOM_Bastone" || equipment.asset.name == "WCOM_Thumber";
 
-        SendUIText("Ammo_Count", $"{ammo}/{ammoMax}");
+        SendUIText("Ammo_Count", $"{ammo}/{ammoMaxes[BitConverter.ToUInt16(equipment.state, 8)]}");
         if (shell)
             SendUIVisibility("Shell", true);
         else
