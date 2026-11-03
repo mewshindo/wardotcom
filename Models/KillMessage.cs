@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace WarDotComUI.Models;
+namespace WarDotCom.Models;
 
 public class KillMessage(string victim, string killer = null, KillMethod method = KillMethod.Unknown, List<KillModifier> modifiers = null, string weapon = "")
 {

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using SDG.Unturned;
 using UnityEngine;
 
-namespace WarDotComUI.UIHandlers
+namespace WarDotCom.UIHandlers
 {
     public class PlayerUIManager
     {

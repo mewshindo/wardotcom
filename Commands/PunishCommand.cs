@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace WarDotComUI.Commands;
+namespace WarDotCom.Commands;
 
 public class PunishCommand : IRocketCommand
 {

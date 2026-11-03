@@ -5,11 +5,11 @@ using System.Linq;
 using UnityEngine;
 using Steamworks;
 using Rocket.Unturned.Player;
-using WarDotComUI.Models;
+using WarDotCom.Models;
 using System.Collections;
 using Rocket.Unturned;
 
-namespace WarDotComUI;
+namespace WarDotCom;
 
 public class Killfeed : MonoBehaviour
 {
@@ -94,6 +94,18 @@ public class Killfeed : MonoBehaviour
         else
         {
             var killerPlayer = UnturnedPlayer.FromCSteamID(instigator);
+
+            if(killerPlayer != null)
+            {
+                if (cause == EDeathCause.GUN && limb == ELimb.SKULL)
+                {
+                    EffectManager.sendUIEffectVisibility(UIKEY, killerPlayer.Player.channel.owner.transportConnection, true, "Canvas/SplashText_Container/Controller/Headshot", true);
+                }
+                else if (cause == EDeathCause.ROADKILL)
+                {
+                    EffectManager.sendUIEffectVisibility(UIKEY, killerPlayer.Player.channel.owner.transportConnection, true, "Canvas/SplashText_Container/Controller/Roadkill", true);
+                }
+            }
 
             var message = new KillMessage(victim)
             {

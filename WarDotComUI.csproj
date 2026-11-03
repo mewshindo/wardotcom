@@ -7,8 +7,8 @@
     <ProjectGuid>{6725E217-2593-40F0-8B07-57B428179B1A}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>WarDotComUI</RootNamespace>
-    <AssemblyName>WarDotComUI</AssemblyName>
+    <RootNamespace>WarDotCom</RootNamespace>
+    <AssemblyName>WarDotCom</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <LangVersion>latest</LangVersion>
     <FileAlignment>512</FileAlignment>
