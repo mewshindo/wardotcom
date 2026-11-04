@@ -108,32 +108,13 @@ public class LifeUI
         OnHealthUpdated(player.life);
     }
 
-    private async void GetUsenameAndProfilePicture()
+    private void GetUsenameAndProfilePicture()
     {
-        var url = $"https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key=4F8ACDBD828AFF3693B9E61814EC85D3&steamids={_player.CSteamID.m_SteamID}";
-
-        string avatarUrl = "";
-
-        try
-        {
-            HttpClient httpClient = new();
-            string response = await httpClient.GetStringAsync(url);
-            JObject json = JObject.Parse(response);
-
-            var players = json["response"]["players"];
-            if (players.HasValues)
-            {
-                avatarUrl = players[0]["avatarfull"].ToString();
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Failed to get Steam Avatar for {_player.CSteamID.m_SteamID}: {ex.Message}");
-        }
-
-        EffectManager.sendUIEffectImageURL(Plugin.UIKEY + 1, _player.Player.channel.owner.transportConnection, true, "SteamProfilePicture", avatarUrl);
-
         SendUIText("Player_Name", _player.CharacterName);
+        if (PlayerUIManager.CSteamIDAvatarCache.TryGetValue(_player.CSteamID.m_SteamID, out string avatar))
+        {
+            EffectManager.sendUIEffectImageURL(Plugin.UIKEY + 1, _player.Player.channel.owner.transportConnection, true, "SteamProfilePicture", avatar);
+        }
     }
 
     private void onBulletSpawned(UseableGun gun, BulletInfo bullet)

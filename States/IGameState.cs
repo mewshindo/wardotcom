@@ -4,12 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace WarDotCom.States
+namespace WarDotCom.States;
+
+public interface IGameState
 {
-    public interface IGameState
-    {
-        void OnEnter();
-        void OnExit();
-        void OnTick(float deltaTime);
-    }
+    void OnEnter();
+    void OnExit();
+    void OnTimeOfDayUpdated();
 }

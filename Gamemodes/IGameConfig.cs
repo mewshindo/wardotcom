@@ -1,16 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using WarDotCom.Wrappers;
+﻿using System.Collections.Generic;
+using WarDotCom.Models;
 
 namespace WarDotCom.Gamemodes
 {
     public interface IGameConfig
     {
         float Duration { get; }
-        List<Vector3Wrapper> Spawnpoints { get; }
+        List<Spawnpoint> Spawnpoints { get; }
         void Save();
         void Load();
     }

@@ -1,21 +1,20 @@
-using WarDotCom.Models;
-using WarDotCom;
 using WarDotCom.UI;
-using SDG.Unturned;
-using Steamworks;
 using WarDotCom.States;
+using SDG.Unturned;
 namespace WarDotCom;
 
 public class GameManager
 {
-    private bool _instaRespawn = false;
-    private PlayerUIManager _uiManager;
-    private Gamemode gamemode;
-
+    private readonly PlayerUIManager _uiManager;
     public IGameState State { get; private set; }
 
     public GameManager()
     {
         _uiManager = new PlayerUIManager();
+    }
+
+    public void OnTimeOfDayTick()
+    {
+        
     }
 }

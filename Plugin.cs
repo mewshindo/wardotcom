@@ -23,7 +23,7 @@ public class Plugin : RocketPlugin
     private byte _zeusRounds = 0;
     private Player _punished;
 
-    public const short UIKEY = 12562;
+    public const short UIKEY = 250;
     protected override void Load()
     {
         Instance = this;

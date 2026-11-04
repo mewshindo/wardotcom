@@ -1,10 +1,8 @@
 ﻿using Rocket.Unturned;
+using Rocket.Unturned.Player;
 using SDG.Unturned;
+using Steamworks;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using WarDotCom.States;
 
 namespace WarDotCom
@@ -12,7 +10,6 @@ namespace WarDotCom
     public class EventRouter
     {
         private readonly GameManager _gameManager;
-        private bool Playing => _gameManager.State is PlayingState;
 
         public EventRouter(GameManager gameManager)
         {
@@ -20,24 +17,45 @@ namespace WarDotCom
 
             U.Events.OnPlayerConnected += OnPlayerConnected;
             U.Events.OnPlayerDisconnected += OnPlayerDisconnected;
-
             PlayerLife.onPlayerDied += onPlayerDied;
-
+            LightingManager.onTimeOfDayChanged += OnTimeOfDayChanged;
+        }
+        public void Dispose()
+        {
+            U.Events.OnPlayerConnected -= OnPlayerConnected;
+            U.Events.OnPlayerDisconnected -= OnPlayerDisconnected;
+            PlayerLife.onPlayerDied -= onPlayerDied;
+            LightingManager.onTimeOfDayChanged -= OnTimeOfDayChanged;
         }
 
-        private void onPlayerDied(PlayerLife sender, EDeathCause cause, ELimb limb, Steamworks.CSteamID instigator)
+        private void OnTimeOfDayChanged()
         {
-            if (!Playing) return;
+            _gameManager.OnTimeOfDayTick();
         }
 
-        private void OnPlayerDisconnected(Rocket.Unturned.Player.UnturnedPlayer player)
+        private void onPlayerDied(PlayerLife sender, EDeathCause cause, ELimb limb, CSteamID instigator)
         {
-            if (!Playing) return;
+            if (_gameManager.State is not PlayingState playingState) return;
+            var killerPlayer = UnturnedPlayer.FromCSteamID(instigator);
+
+            if (killerPlayer != null)
+            {
+                playingState.Gamemode.OnPlayerDied(sender.player, cause, limb, killerPlayer.Player);
+            }
+            else
+            {
+                playingState.Gamemode.OnPlayerDied(sender.player, cause, limb, null);
+            }
         }
 
-        private void OnPlayerConnected(Rocket.Unturned.Player.UnturnedPlayer player)
+        private void OnPlayerDisconnected(UnturnedPlayer player)
         {
-            if (!Playing) return;
+            if (_gameManager.State is not PlayingState playingState) return;
+        }
+
+        private void OnPlayerConnected(UnturnedPlayer player)
+        {
+            if (_gameManager.State is not PlayingState playingState) return;
         }
     }
 }
