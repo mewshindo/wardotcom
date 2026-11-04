@@ -5,13 +5,17 @@ using WarDotCom.Models;
 
 namespace WarDotCom.Gamemodes.GunGame
 {
-    public class GunGameConfig : IGameConfig
+    public class GunGameConfig
     {
-        public float Duration { get; private set; }
-        public ushort ScoreToWin { get; private set; }
-        public string UIEffectGUID { get; private set; }
+        public float DurationSeconds { get; private set; } = 300;
+        public ushort ScoreToWin { get; private set; } = 20;
+        public string UIEffectGUID { get; private set; } = "";
         public List<Spawnpoint> Spawnpoints { get; private set; }
-        public List<string> WeaponsInOrder { get; private set; }
+        public List<string> WeaponsInOrder { get; private set; } = new List<string>()
+        {
+            "WCOM_Bastone",
+            "WCOM_Bluntforce"
+        };
 
         private readonly string _savePath;
         public GunGameConfig(string savePath)
@@ -32,7 +36,7 @@ namespace WarDotCom.Gamemodes.GunGame
             GunGameConfig config = JsonConvert.DeserializeObject<GunGameConfig>(json) ?? throw new JsonSerializationException();
 
             this.Spawnpoints = config.Spawnpoints;
-            this.Duration = config.Duration;
+            this.DurationSeconds = config.DurationSeconds;
             this.UIEffectGUID = config.UIEffectGUID;
             this.WeaponsInOrder = config.WeaponsInOrder;
             this.ScoreToWin = config.ScoreToWin;

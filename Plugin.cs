@@ -13,11 +13,11 @@ namespace WarDotCom;
 public class Plugin : RocketPlugin
 {
     public static Plugin Instance;
+    public GameManager GameManager { get; set; }
 
-    private GameManager _gameManager;
-    private EffectAsset _lightningBolt;
+
+    public EffectAsset LightningBoltEffect;
     private EffectAsset _boom;
-
 
     private float _time = 0f;
     private byte _zeusRounds = 0;
@@ -40,8 +40,8 @@ public class Plugin : RocketPlugin
 
     private void onLevelLoaded(int level)
     {
-        _gameManager = new();
-        _lightningBolt = (EffectAsset)Assets.find(new Guid("bed12ffc45694cd69217924d75e96fe9"));
+        GameManager = new();
+        LightningBoltEffect = (EffectAsset)Assets.find(new Guid("bed12ffc45694cd69217924d75e96fe9"));
         _boom = (EffectAsset)Assets.find(new Guid("61d63a016a6448ffb6e4432a4c6a6ee1"));
     }
 
@@ -75,7 +75,7 @@ public class Plugin : RocketPlugin
             }
             var effect = new TriggerEffectParameters()
             {
-                asset = _lightningBolt,
+                asset = LightningBoltEffect,
                 position = _punished.transform.position,
                 relevantDistance = 4096,
                 shouldReplicate = true,

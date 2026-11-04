@@ -19,13 +19,17 @@ namespace WarDotCom
             U.Events.OnPlayerDisconnected += OnPlayerDisconnected;
             PlayerLife.onPlayerDied += onPlayerDied;
             LightingManager.onTimeOfDayChanged += OnTimeOfDayChanged;
+            DamageTool.damagePlayerRequested += OnDamagePlayerRequested;
         }
+
+
         public void Dispose()
         {
             U.Events.OnPlayerConnected -= OnPlayerConnected;
             U.Events.OnPlayerDisconnected -= OnPlayerDisconnected;
             PlayerLife.onPlayerDied -= onPlayerDied;
             LightingManager.onTimeOfDayChanged -= OnTimeOfDayChanged;
+            DamageTool.damagePlayerRequested -= OnDamagePlayerRequested;
         }
 
         private void OnTimeOfDayChanged()
@@ -46,6 +50,15 @@ namespace WarDotCom
             {
                 playingState.Gamemode.OnPlayerDied(sender.player, cause, limb, null);
             }
+        }
+
+        private void OnDamagePlayerRequested(ref DamagePlayerParameters parameters, ref bool shouldAllow)
+        {
+            if (_gameManager.State is not PlayingState playingState) return;
+            var killerPlayer = UnturnedPlayer.FromCSteamID(parameters.killer);
+            if (killerPlayer == null) return;
+
+            playingState.Gamemode.OnPlayerDamageRequested(parameters, killerPlayer.Player);
         }
 
         private void OnPlayerDisconnected(UnturnedPlayer player)

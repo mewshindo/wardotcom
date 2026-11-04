@@ -11,6 +11,7 @@ public abstract class Gamemode
     public abstract void EndGame();
     public abstract void OnTimeOfDayUpdated();
     public abstract void OnPlayerDied(Player dead, EDeathCause cause, ELimb limb, Player killer);
+    public abstract void OnPlayerDamageRequested(DamagePlayerParameters parameters, Player killer);
     public abstract void OnPlayerConnected(Player player);
     public abstract void OnPlayerDisconnected(Player player);
     public virtual void ClearPlayerInventory(Player player)
@@ -61,6 +62,35 @@ public abstract class Gamemode
         {
             var player = sp.player;
             ClearPlayerInventory(player);
+        }
+    }
+    public virtual void ClearPlayerGunSlots(Player player)
+    {
+#pragma warning disable CS0612
+        player.channel.send("tellSlot", (ESteamCall)1, (ESteamPacket)15,
+        [
+            0,
+            0,
+            new byte[0]
+        ]);
+        player.channel.send("tellSlot", (ESteamCall)1, (ESteamPacket)15,
+        [
+            1,
+            0,
+            new byte[0]
+        ]);
+
+        for (byte page = 0; page < 2; page++)
+        {
+            if (page == PlayerInventory.AREA)
+                continue;
+
+            var count = player.inventory.getItemCount(page);
+
+            for (byte index = 0; index < count; index++)
+            {
+                player.inventory.removeItem(page, 0);
+            }
         }
     }
     public virtual void RevivePlayer(Player player, List<Spawnpoint> spawnpoints)
