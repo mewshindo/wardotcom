@@ -38,15 +38,6 @@ public class LifeUI
         _player.Player.setPluginWidgetFlag(EPluginWidgetFlags.ShowVehicleStatus, false);
         _player.Player.setPluginWidgetFlag(EPluginWidgetFlags.ShowReputationChangeNotification, false);
 
-        OnHealthUpdated(_player.Player.life);
-        OnBrokenUpdated(_player.Player.life);
-        OnBleedingUpdated(_player.Player.life);
-        OnStaminaUpdated(_player.Stamina);
-        OnRadiationUpdated(_player.Player.movement.isRadiated);
-        OnUseableChanged_Global(_player.Player.equipment);
-
-        GetUsenameAndProfilePicture();
-
         List<ItemMagazineAsset> assets = [];
         Assets.find(assets);
         foreach (ItemMagazineAsset mag in assets)
@@ -56,6 +47,17 @@ public class LifeUI
                 ammoMaxes.Add(mag.id, mag.amount);
             }
         }
+
+        GetUsenameAndProfilePicture();
+
+        OnHealthUpdated(_player.Player.life);
+        OnBrokenUpdated(_player.Player.life);
+        OnBleedingUpdated(_player.Player.life);
+        OnStaminaUpdated(_player.Stamina);
+        OnRadiationUpdated(_player.Player.movement.isRadiated);
+        OnUseableChanged_Global(_player.Player.equipment);
+
+
     }
 
     private void OnHealthUpdated(PlayerLife life)
@@ -214,7 +216,9 @@ public class LifeUI
 
         bool shell = equipment.asset.name == "WCOM_Bluntforce" || equipment.asset.name == "WCOM_Bastone" || equipment.asset.name == "WCOM_Thumber";
 
-        SendUIText("Ammo_Count", $"{ammo}/{ammoMaxes[BitConverter.ToUInt16(equipment.state, 8)]}");
+        if (!ammoMaxes.TryGetValue(BitConverter.ToUInt16(equipment.state, 8), out byte ammoMax)) return;
+        
+        SendUIText("Ammo_Count", $"{ammo}/{ammoMax}");
         if (shell)
             SendUIVisibility("Shell", true);
         else

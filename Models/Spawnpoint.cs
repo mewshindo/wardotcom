@@ -14,6 +14,6 @@ namespace WarDotCom.Models
         public float Z { get; } = z;
         public float Yaw { get; } = yaw;
 
-        public Vector3 Position = new(x, y, z);
+        public readonly Vector3 Position() => new Vector3(x, y, z);
     }
 }

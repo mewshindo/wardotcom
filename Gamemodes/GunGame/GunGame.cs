@@ -14,15 +14,16 @@ public class GunGame(GunGameConfig config) : Gamemode
     private GunGameUI _gameUI;
     private float _timeRemaining;
 
-    private List<ItemAsset> _weaponAssets;
+    private List<ItemAsset> _weaponAssets = [];
 
     private List<GunGamePlayer> _players = [];
-    public override void StartGame(List<Player> participants)
+    public override void StartGame()
     {
+        if (_config == null) throw new NullReferenceException($"No config");
         _timeRemaining = _config.DurationSeconds;
 
         EffectAsset ui = Assets.find(new Guid(_config.UIEffectGUID)) as EffectAsset 
-            ?? throw new NullReferenceException($"Failed to find {this.GetType().Name} UI asset");
+            ?? throw new NullReferenceException($"Failed to find GunGame UI asset");
 
         List<ItemWeaponAsset> assets = [];
         Assets.find(assets);
@@ -36,8 +37,9 @@ public class GunGame(GunGameConfig config) : Gamemode
             }
         }
 
-        foreach (var player in participants)
+        foreach (var sp in Provider.clients)
         {
+            var player = sp.player;
             _players.Add(new GunGamePlayer
             {
                 Player = player,
@@ -59,8 +61,13 @@ public class GunGame(GunGameConfig config) : Gamemode
         if(_timeRemaining == 0)
             EndGame();
     }
-    public override void EndGame()
+    public override void EndGame(params object[] args)
     {
+        _gameUI.ClearUI();
+        if(args.Length == 0)
+        {
+            _gameUI.ShowLeaderboard();
+        }
         OnGameFinished?.Invoke(this);
         _players.Clear();
     }

@@ -21,6 +21,8 @@ public class PlayingState : IGameState
     public void OnEnter()
     {
         Gamemode.OnGameFinished += HandleGameFinished;
+
+        Gamemode.StartGame();
     }
 
     public void OnExit()
@@ -30,7 +32,7 @@ public class PlayingState : IGameState
 
     private void HandleGameFinished(Gamemode gamemode)
     {
-        throw new NotImplementedException();
+        
     }
 
     public void OnTimeOfDayUpdated()

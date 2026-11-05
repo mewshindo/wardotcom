@@ -47,15 +47,16 @@ namespace WarDotCom.UI
             _lifeUIs.Remove(player);
         }
 
-        private async void OnPlayerConnected(UnturnedPlayer player)
+        private void OnPlayerConnected(UnturnedPlayer player)
         {
-            await TryCachePlayerAvatar(player);
-            _lifeUIs.Add(player, new LifeUI(player));
-            EffectManager.SendUIEffect(_killFeedUIEffect, Plugin.UIKEY, player.Player.channel.owner.transportConnection, true);
+            TryCachePlayerAvatar(player);
             EffectManager.SendUIEffect(_lifeUIEffect, Plugin.UIKEY + 1, player.Player.channel.owner.transportConnection, true);
+            EffectManager.SendUIEffect(_killFeedUIEffect, Plugin.UIKEY, player.Player.channel.owner.transportConnection, true);
+
+            _lifeUIs.Add(player, new LifeUI(player));
         }
 
-        private async Task TryCachePlayerAvatar(UnturnedPlayer player)
+        private async void TryCachePlayerAvatar(UnturnedPlayer player)
         {
             if (CSteamIDAvatarCache.ContainsKey(player.CSteamID.m_SteamID)) return;
 

@@ -10,10 +10,13 @@ namespace WarDotCom.Gamemodes.GunGame
     {
         private byte _activePlayerCards;
         private readonly List<GunGamePlayer> _players;
+        private readonly EffectAsset _uiEffect;
         public GunGameUI(EffectAsset ui, List<GunGamePlayer> players)
         {
+            _uiEffect = ui;
             _players = players;
             SendUI_AllPlayers(ui);
+            UpdateTopScoreboard();
         }
 
         public void UpdateClock(float secondsRemaining)
@@ -83,5 +86,6 @@ namespace WarDotCom.Gamemodes.GunGame
                 SendUIText_AllPlayers($"Canvas/Leaderboard/Player_{i}/Score", $"{playersSorted[i].Score}");
             }
         }
+        public void ClearUI() => ClearUI_AllPlayers(_uiEffect);
     }
 }

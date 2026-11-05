@@ -45,8 +45,8 @@ namespace WarDotCom.Commands
                 }
                 if (command[0] == "remove")
                 {
-                    var closest = Plugin.Instance.GameManager.ConfigManager.GunGameConfig.Spawnpoints.FirstOrDefault(s => Vector3.Distance(uplayer.Position, s.Position) < 3f);
-                    if(closest.Position == Vector3.zero)
+                    var closest = Plugin.Instance.GameManager.ConfigManager.GunGameConfig.Spawnpoints.FirstOrDefault(s => Vector3.Distance(uplayer.Position, s.Position()) < 3f);
+                    if(closest.Position() == Vector3.zero)
                     {
                         UnturnedChat.Say(caller, "No spawnpoints of this game nearby", Color.red);
                         return;
@@ -60,7 +60,7 @@ namespace WarDotCom.Commands
                         var effect = new TriggerEffectParameters()
                         {
                             asset = Plugin.Instance.LightningBoltEffect,
-                            position = spawnpoint.Position + Vector3.down * 5,
+                            position = spawnpoint.Position() + Vector3.down * 5,
                             relevantDistance = 4096,
                             shouldReplicate = true,
                             reliable = true,

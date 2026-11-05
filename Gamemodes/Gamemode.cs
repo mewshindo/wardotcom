@@ -7,8 +7,8 @@ using WarDotCom.Models;
 namespace WarDotCom;
 public abstract class Gamemode
 {
-    public abstract void StartGame(List<Player> participants);
-    public abstract void EndGame();
+    public abstract void StartGame();
+    public abstract void EndGame(params object[] args);
     public abstract void OnTimeOfDayUpdated();
     public abstract void OnPlayerDied(Player dead, EDeathCause cause, ELimb limb, Player killer);
     public abstract void OnPlayerDamageRequested(DamagePlayerParameters parameters, Player killer);
@@ -98,7 +98,7 @@ public abstract class Gamemode
         var spawnpoint = spawnpoints.RandomOrDefault();
 
         player.life.ServerRespawn(false);
-        player.teleportToLocation(spawnpoint.Position, spawnpoint.Yaw);
+        player.teleportToLocation(spawnpoint.Position(), spawnpoint.Yaw);
     }
     public Action<Gamemode> OnGameFinished { get; set; }
 }

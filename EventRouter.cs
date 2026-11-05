@@ -3,38 +3,44 @@ using Rocket.Unturned.Player;
 using SDG.Unturned;
 using Steamworks;
 using System;
+using UnityEngine;
 using WarDotCom.States;
 
 namespace WarDotCom
 {
-    public class EventRouter
+    public class EventRouter : MonoBehaviour
     {
-        private readonly GameManager _gameManager;
+        private GameManager _gameManager;
+        private uint _lastTime;
 
-        public EventRouter(GameManager gameManager)
+        public void Initialize(GameManager gameManager)
         {
             _gameManager = gameManager;
 
             U.Events.OnPlayerConnected += OnPlayerConnected;
             U.Events.OnPlayerDisconnected += OnPlayerDisconnected;
             PlayerLife.onPlayerDied += onPlayerDied;
-            LightingManager.onTimeOfDayChanged += OnTimeOfDayChanged;
             DamageTool.damagePlayerRequested += OnDamagePlayerRequested;
         }
-
 
         public void Dispose()
         {
             U.Events.OnPlayerConnected -= OnPlayerConnected;
             U.Events.OnPlayerDisconnected -= OnPlayerDisconnected;
             PlayerLife.onPlayerDied -= onPlayerDied;
-            LightingManager.onTimeOfDayChanged -= OnTimeOfDayChanged;
             DamageTool.damagePlayerRequested -= OnDamagePlayerRequested;
+
+            Destroy(this);
         }
 
-        private void OnTimeOfDayChanged()
+        private void Update()
         {
-            _gameManager.OnTimeOfDayTick();
+            if (_gameManager == null) return;
+            if(LightingManager.time != _lastTime)
+            {
+                _gameManager.OnTimeOfDayTick();
+                _lastTime = LightingManager.time;
+            }
         }
 
         private void onPlayerDied(PlayerLife sender, EDeathCause cause, ELimb limb, CSteamID instigator)
